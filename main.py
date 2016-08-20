@@ -75,13 +75,6 @@ def generateUptime():
       uptime_string = str(timedelta(seconds = uptime_seconds))
    return uptime_string[0:7]
 
-def isPowerSaving():
-   powerSaveStartHour = 23
-   powerSaveEndHour = 7
-   currentHour = int(strftime("%H", localtime()))
-   return ( currentHour > powerSaveStartHour or currentHour < powerSaveEndHour )
-   
-
 
 setBacklightOn()
 
