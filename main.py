@@ -9,10 +9,9 @@ from decimal import Decimal
 from datetime import timedelta
 
 lcd = serial.Serial("/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0", 9600)
-
+debug = False
 isLcdLit = True
 width = 20
-
 
 def setBacklightOff():
    lcd.write("\xFE")
@@ -32,12 +31,14 @@ def setBacklightOn():
    time.sleep(0.1)
 
 def writeLine( str, line):
-   lcd.write("\xFE")
-   lcd.write("\x47")
-   lcd.write("\x01")
-   lcd.write(chr(line))   
-   lcd.write(str.ljust(width))
-   time.sleep(0.1)
+   if debug :
+      print( str.ljust(width) )
+   else :
+      lcd.write("\xFE")
+      lcd.write("\x47")
+      lcd.write("\x01")
+      lcd.write(chr(line))
+      lcd.write(str.ljust(width))
 
 def generateGraph(name, max, value, maxCharWidth):
    graphStartStr		= name.upper() + "["
@@ -72,7 +73,7 @@ def generateUptime():
    with open('/proc/uptime', 'r') as f:
       uptime_seconds = float(f.readline().split()[0])
       uptime_string = str(timedelta(seconds = uptime_seconds))
-   return uptime_string
+   return uptime_string[0:7]
 
 def isPowerSaving():
    powerSaveStartHour = 23
@@ -82,19 +83,10 @@ def isPowerSaving():
    
 
 
-#/sys/class/thermal/thermal_zone0/temp   
-
 setBacklightOn()
-
 
 while True :
 
-   if isPowerSaving():
-      if isLcdLit :
-         setBacklightOff()      
-   else :
-      if isLcdLit == False:
-         setBacklightOn()
    writeLine( strftime("%d %b %Y %H:%M:%S", localtime())   ,1)
    writeLine( generateHddUsageGraph("/media/sg","SGT") + generateHddUsageGraph("/media/wd", "WDG"), 2)
    writeLine( "TEMP:" + generateTemp() + " UP: " + generateUptime(), 4)
